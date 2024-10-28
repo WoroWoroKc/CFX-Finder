@@ -1,17 +1,35 @@
 <script setup>
-import { Icon } from "@iconify/vue";
-
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 import axios from "axios";
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
+import { useColorMode } from "@vueuse/core";
 
+import { Icon } from "@iconify/vue";
+
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card";
+
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const mode = useColorMode();
 const route = useRoute();
 const serverData = ref(null);
 
-// Mapowanie kolorów
 const colorMap = {
     "^0": "#F0F0F0",
     "^1": "#F44336",
@@ -25,15 +43,36 @@ const colorMap = {
     "^9": "#9E9E9E",
 };
 
-// Funkcja do parsowania kolorowego tekstu
 function formatText(text) {
     return (
         text.replace(/\^(\d)/g, (match, colorCode) => {
-            const color = colorMap[`^${colorCode}`] || "#F0F0F0"; // domyślnie biały
+            const color = colorMap[`^${colorCode}`] || "#F0F0F0";
             return `<span style="color: ${color}">`;
         }) + "</span>".repeat((text.match(/\^/g) || []).length)
     );
 }
+
+const formattedIP = () => {
+    if (!serverData.value || !serverData.value.endopint) return "";
+    return serverData.value.endopint.split(":")[0];
+};
+
+const searchInPlayers = ref("");
+
+const filteredAndSortedPlayers = computed(() => {
+    if (!serverData.value) return [];
+
+    const filteredPlayers = serverData.value.players.filter((player) => {
+        return (
+            player.name
+                .toLowerCase()
+                .includes(searchInPlayers.value.toLowerCase()) ||
+            player.id.toString().includes(searchInPlayers.value)
+        );
+    });
+
+    return filteredPlayers.sort((a, b) => a.id - b.id);
+});
 
 onMounted(() => {
     const cfxKey = route.params.cfxKey;
@@ -42,6 +81,8 @@ onMounted(() => {
         .get(`https://servers-frontend.fivem.net/api/servers/single/${cfxKey}`)
         .then((response) => {
             const data = response.data.Data;
+
+            console.log(data);
 
             serverData.value = {
                 hostname: data.hostname,
@@ -57,6 +98,7 @@ onMounted(() => {
                 gameBuild: data.vars.sv_enforceGameBuild,
                 upvotePower: data.upvotePower,
                 burstPower: data.burstPower,
+                players: data.players,
                 discord: data.vars.Discord || data.vars.discord,
             };
         })
@@ -90,7 +132,11 @@ onMounted(() => {
                 <p class="text-sm text-muted-foreground">
                     {{ serverData.endopint }}
                 </p>
-                <Icon icon="material-symbols:info" />
+                <a
+                    :href="`https://check-host.net/ip-info?host=${formattedIP(serverData.endopint)}`"
+                >
+                    <Icon icon="material-symbols:info"
+                /></a>
                 <Separator orientation="vertical" />
                 <Avatar class="w-4 h-4 mr-0">
                     <AvatarImage
@@ -110,9 +156,15 @@ onMounted(() => {
                     {{ serverData.server }}
                 </p>
                 <Separator orientation="vertical" />
-                <p class="text-sm text-muted-foreground">
-                    {{ serverData.gameBuild }}
-                </p>
+                <HoverCard>
+                    <HoverCardTrigger
+                        ><p class="text-sm text-muted-foreground">
+                            {{ serverData.gameBuild }}
+                        </p></HoverCardTrigger
+                    >
+                    <HoverCardContent> Server game build </HoverCardContent>
+                </HoverCard>
+
                 <Separator
                     orientation="vertical"
                     v-if="serverData.discord.length > 1"
@@ -129,17 +181,83 @@ onMounted(() => {
         <div class="space-y-1">
             <h4 class="text-sm font-medium leading-none">Server Info</h4>
             <div class="flex h-5 items-center space-x-4 text-sm">
-                <p class="text-sm text-muted-foreground">
-                    📈 {{ serverData.upvotePower }}
-                </p>
+                <HoverCard>
+                    <HoverCardTrigger
+                        ><p class="text-sm text-muted-foreground">
+                            📈 {{ serverData.upvotePower }}
+                        </p></HoverCardTrigger
+                    >
+                    <HoverCardContent>
+                        FiveM Upvote is a measure of community support for a
+                        FiveM server, where players upvote the server to boost
+                        its ranking and visibility on server lists. Higher
+                        upvote counts help attract more players by showcasing
+                        popularity.
+                    </HoverCardContent>
+                </HoverCard>
                 <Separator orientation="vertical" />
-                <p class="text-sm text-muted-foreground">
-                    🔥 {{ serverData.burstPower }}
-                </p>
+                <HoverCard>
+                    <HoverCardTrigger
+                        ><p class="text-sm text-muted-foreground">
+                            🔥 {{ serverData.burstPower }}
+                        </p></HoverCardTrigger
+                    >
+                    <HoverCardContent>
+                        FiveM Burst is a temporary promotional boost that
+                        significantly raises a server's position in the server
+                        list for a short period. It helps servers gain quick
+                        visibility, often used during peak player times to
+                        attract attention.
+                    </HoverCardContent>
+                </HoverCard>
+
                 <Separator orientation="vertical" />
                 <p class="text-sm text-muted-foreground">
                     {{ serverData.clients }} / {{ serverData.maxClients }}
                 </p>
+                <Sheet>
+                    <SheetTrigger>
+                        <Icon icon="material-symbols:list-alt-rounded"
+                    /></SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>Player list</SheetTitle>
+                            <SheetDescription>
+                                List of all players on a given server
+                            </SheetDescription>
+
+                            <Input
+                                type="text"
+                                placeholder="Player name or ID"
+                                v-model="searchInPlayers"
+                            />
+
+                            <ScrollArea class="rounded-md border h-[82vh] mt-1">
+                                <div class="p-4">
+                                    <div
+                                        v-for="item in filteredAndSortedPlayers"
+                                    >
+                                        <div class="text-sm">
+                                            <span
+                                                class="text-gray-800"
+                                                :class="
+                                                    mode == 'dark'
+                                                        ? 'text-gray-600'
+                                                        : 'text-gray-900'
+                                                "
+                                                >[{{ item.id }}]
+                                            </span>
+                                            <span class="font-bold">{{
+                                                item.name
+                                            }}</span>
+                                        </div>
+                                        <Separator class="my-2" />
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        </SheetHeader>
+                    </SheetContent>
+                </Sheet>
             </div>
         </div>
     </div>

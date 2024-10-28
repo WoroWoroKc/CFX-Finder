@@ -3,7 +3,6 @@ import { useColorMode } from "@vueuse/core";
 
 import { Icon } from "@iconify/vue";
 
-// Components
 import {
     Popover,
     PopoverContent,
