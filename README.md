@@ -3,6 +3,8 @@
 
 A simple web application that searches and displays data about FiveM servers, such as the server owner’s name, player count, player details, IP, and more.
 
+Demo page https://woroworokc.github.io/CFX-Finder/
+
 ## Features
 
 - **Search FiveM Servers**: Find details about FiveM servers by server name or IP.
