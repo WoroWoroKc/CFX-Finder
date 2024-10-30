@@ -4,12 +4,12 @@ import ServerInfo from "@/page/ServerInfo.vue";
 
 const routes = [
   {
-    path: "/CFX-Finder",
+    path: "/",
     name: "Home",
     component: CfxInput,
   },
   {
-    path: "/CFX-Finder/info:cfxKey",
+    path: "/info:cfxKey",
     name: "ServerInfo",
     component: ServerInfo,
     props: true,
