@@ -58,6 +58,7 @@ const formattedIP = () => {
 };
 
 const searchInPlayers = ref("");
+const searchInResources = ref("");
 
 const filteredAndSortedPlayers = computed(() => {
     if (!serverData.value) return [];
@@ -74,6 +75,18 @@ const filteredAndSortedPlayers = computed(() => {
     return filteredPlayers.sort((a, b) => a.id - b.id);
 });
 
+const filteredAndSortedResource = computed(() => {
+    if (!serverData.value) return [];
+
+    const filteredResource = serverData.value.resources.filter((resource) => {
+        return resource
+            .toLowerCase()
+            .includes(searchInResources.value.toLowerCase());
+    });
+
+    return filteredResource.sort((a, b) => a.id - b.id);
+});
+
 onMounted(() => {
     const cfxKey = route.params.cfxKey;
 
@@ -81,8 +94,6 @@ onMounted(() => {
         .get(`https://servers-frontend.fivem.net/api/servers/single/${cfxKey}`)
         .then((response) => {
             const data = response.data.Data;
-
-            console.log(data);
 
             serverData.value = {
                 hostname: data.hostname,
@@ -99,6 +110,7 @@ onMounted(() => {
                 upvotePower: data.upvotePower,
                 burstPower: data.burstPower,
                 players: data.players,
+                resources: data.resources,
                 discord: data.vars.Discord || data.vars.discord,
             };
         })
@@ -249,6 +261,45 @@ onMounted(() => {
                                             </span>
                                             <span class="font-bold">{{
                                                 item.name
+                                            }}</span>
+                                        </div>
+                                        <Separator class="my-2" />
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        </SheetHeader>
+                    </SheetContent>
+                </Sheet>
+
+                <Separator orientation="vertical" />
+                <p class="text-sm text-muted-foreground">
+                    Resources {{ serverData.resources.length }}
+                </p>
+                <Sheet>
+                    <SheetTrigger>
+                        <Icon icon="material-symbols:list-alt-rounded"
+                    /></SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>Resources list</SheetTitle>
+                            <SheetDescription>
+                                List of all resources
+                            </SheetDescription>
+
+                            <Input
+                                type="text"
+                                placeholder="Resources name"
+                                v-model="searchInResources"
+                            />
+
+                            <ScrollArea class="rounded-md border h-[82vh] mt-1">
+                                <div class="p-4">
+                                    <div
+                                        v-for="item in filteredAndSortedResource"
+                                    >
+                                        <div class="text-sm">
+                                            <span class="font-bold">{{
+                                                item
                                             }}</span>
                                         </div>
                                         <Separator class="my-2" />
