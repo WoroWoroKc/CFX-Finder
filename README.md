@@ -41,7 +41,7 @@ Demo page https://woroworokc.github.io/CFX-Finder/
 
 ## Usage
 
-1. Enter a server name or IP in the search field.
+1. Enter a server cfx key in the search field.
 2. View server details, including owner information, player count, player details, IP address, and more.
 
 ## License
