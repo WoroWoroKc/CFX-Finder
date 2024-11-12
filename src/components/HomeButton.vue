@@ -1,11 +1,7 @@
-<script setup>
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-</script>
-
 <template>
-    <div class="absolute top-5 left-5 cursor-pointer" @click="router.push('/')">
-        Home
-    </div>
+    <RouterLink to="/"
+        ><div class="absolute top-5 left-5 cursor-pointer hover:text-slate-400">
+            Home
+        </div></RouterLink
+    >
 </template>
